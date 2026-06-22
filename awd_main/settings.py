@@ -121,3 +121,15 @@ STATIC_URL = 'static/'
 
 MEDIA_URL='/media/'
 MEDIA_ROOT=BASE_DIR/'media'
+
+
+
+from django.contrib.messages import constants as messages
+
+MESSAGE_TAGS = {
+    messages.ERROR: "danger",
+    50: "critical",
+}
+
+
+CELERY_BROKER_URL='redis://localhost:6379'

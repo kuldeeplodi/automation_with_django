@@ -2,6 +2,7 @@ from django.core.management.base import  BaseCommand,CommandError
 from dataentry.models import Student
 import csv
 from django.apps import apps
+from django.db import DataError
 
 
 class Command(BaseCommand):
@@ -29,10 +30,18 @@ class Command(BaseCommand):
         if not model:
             raise CommandError(f"Model {model_name} does not found! ")
         
+        model_field=[field.name for field in model._meta.fields if field.name != "id"]
+
+        
         with open(file_path,"r") as file:
             records=csv.DictReader(file)
+            csv_field=records.fieldnames
+
+            if csv_field != model_field:
+               raise DataError(f'csv file does not match {model_name} table field')
+            
             for data in records:
-               model.objects.create(**data)
+                  model.objects.create(**data)
        
         self.stdout.write(self.style.SUCCESS("data are import from csv  successfully!"))
 
