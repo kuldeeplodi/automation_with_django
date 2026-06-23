@@ -3,6 +3,7 @@ from dataentry.models import Student
 import csv
 from django.apps import apps
 from django.db import DataError
+from dataentry.util import check_csv_error
 
 
 class Command(BaseCommand):
@@ -17,29 +18,10 @@ class Command(BaseCommand):
         file_path=kwargs["file_path"]
         model_name=kwargs["model_name"].capitalize()
 
+        model=check_csv_error(file_path,model_name)
 
-        # search for the model
-        model=None
-        for app_config in apps.get_app_configs():
-         try:
-            model=apps.get_model(app_config.label,model_name)
-            break
-         except LookupError:
-            continue
-
-        if not model:
-            raise CommandError(f"Model {model_name} does not found! ")
-        
-        model_field=[field.name for field in model._meta.fields if field.name != "id"]
-
-        
         with open(file_path,"r") as file:
-            records=csv.DictReader(file)
-            csv_field=records.fieldnames
-
-            if csv_field != model_field:
-               raise DataError(f'csv file does not match {model_name} table field')
-            
+            records=csv.DictReader(file) 
             for data in records:
                   model.objects.create(**data)
        
